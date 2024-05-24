@@ -2,6 +2,7 @@ import cv2
 import numpy as np
 
 def transpose3D(obj : np.ndarray, bg, spectiveTransform) -> np.ndarray:
+    # print(f'[debug] obj.shape: {obj.shape}, bg.shape: {bg.shape}')
     x1, y1 = spectiveTransform[0]
     x2, y2 = spectiveTransform[1]
     x3, y3 = spectiveTransform[2]
@@ -24,6 +25,15 @@ def transpose3D(obj : np.ndarray, bg, spectiveTransform) -> np.ndarray:
     src_points = np.float32([[0, 0], [obj.shape[1], 0], [obj.shape[1], obj.shape[0]], [0, obj.shape[0]]])
     M = cv2.getPerspectiveTransform(src_points, dst_points)
     warped_image = cv2.warpPerspective(obj, M, (obj.shape[1], obj.shape[0]))
+    # 去除warped_image中全0的行和列
+    rows = np.zeros(warped_image.shape[0], dtype=bool)
+    cols = np.zeros(warped_image.shape[1], dtype=bool)
+    for c in range(3):
+        rows |= (warped_image[:, :, c] == 0).all(axis=1)
+        cols |= (warped_image[:, :, c] == 0).all(axis=0)
+    warped_image = warped_image[~rows, :, :]
+    warped_image = warped_image[:, ~cols, :]
+    # print(f'[debug] warped_image.shape: {warped_image.shape}')
     return warped_image, center_bg, M, 1/_k
 
 def main_color_detect(image) -> np.ndarray:
@@ -111,7 +121,7 @@ def TransFussion(bg, obj, spectiveTransform, k):
     warped_image, center_bg, Mask, _k = transpose3D(obj, bg, spectiveTransform)
 
     color_bgr = main_color_detect(obj)
-    mask = cv2.warpPerspective(np.ones(obj.shape[:2], dtype=np.uint8), Mask, dsize=(obj.shape[1], obj.shape[0]))
+    mask = cv2.warpPerspective(np.ones(obj.shape[:2], dtype=np.uint8), Mask, dsize=(warped_image.shape[1], warped_image.shape[0]))
     bool_mask = mask > 0
     warped_image[~bool_mask] = color_bgr
 
@@ -123,7 +133,7 @@ if __name__ == '__main__':
     image = cv2.imread('../figures/example.jpg')
     bg = cv2.imread('../figures/example2.jpg')
 
-    mixed_image = TransFussion(bg, image, [[70, 60], [200, 80], [250, 200], [30, 220]], 0.5)
+    mixed_image = TransFussion(bg, image, [[70, 60], [200, 80], [250, 200], [30, 220]], 1)
 
     # cv2.imshow('mixed_clone', mixed_image)
     # cv2.waitKey(0)

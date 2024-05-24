@@ -64,9 +64,9 @@ while True:
 			corner = corner.reshape(4,2).astype(np.uint32).tolist()
 			# corners = corners[0].reshape(4,2).astype(np.uint32).tolist()
 			if flag == 1:
-				render = TransFussion(frame, 'test.jpg', corner, 1)
+				render = TransFussion(frame, 'test.jpg', corner, 1.5)
 			else:
-				render = TransFussion(render, 'test.jpg', corner, 1)
+				render = TransFussion(render, 'test.jpg', corner, 1.5)
 	# corners = [int(corner) for corner in corners]
 	
 	if render.any():
