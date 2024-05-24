@@ -25,7 +25,7 @@ ARUCO_DICT = {
 	"DICT_APRILTAG_36h11": cv2.aruco.DICT_APRILTAG_36h11
 }
 
-def aruco_display(corners, ids, rejected, image, bg_color):
+def cover_aruco(corners, ids, rejected, image, bg_color):
 	if len(corners) > 0:
 		# flatten the ArUco IDs list
 		ids = ids.flatten()
@@ -43,11 +43,10 @@ def aruco_display(corners, ids, rejected, image, bg_color):
 
 
 
-			# cv2.line(image, topLeft, topRight, (0, 255, 0), 2)
-			# cv2.line(image, topRight, bottomRight, (0, 255, 0), 2)
-			# cv2.line(image, bottomRight, bottomLeft, (0, 255, 0), 2)
-			# cv2.line(image, bottomLeft, topLeft, (0, 255, 0), 2)
-			# print(f"corners: {corners}")
+			cv2.line(image, topLeft, topRight, bg_color, 5)
+			cv2.line(image, topRight, bottomRight, bg_color, 5)
+			cv2.line(image, bottomRight, bottomLeft, bg_color, 5)
+			cv2.line(image, bottomLeft, topLeft, bg_color, 5)
 			cv2.fillPoly(image, [corners.astype(np.int32).reshape((-1, 1, 2))], bg_color)
 			# compute and draw the center (x, y)-coordinates of the ArUco
 			# marker
@@ -59,4 +58,4 @@ def aruco_display(corners, ids, rejected, image, bg_color):
 				# 0.5, (0, 255, 0), 2)
 			print("[Inference] ArUco marker ID: {}".format(markerID))
 			# show the output image
-	return image
+	return image,

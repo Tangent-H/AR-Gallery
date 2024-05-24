@@ -6,12 +6,14 @@ python detect_aruco_video.py -i True -t DICT_5X5_100
 '''
 
 import numpy as np
-from utils import ARUCO_DICT, aruco_display
+from utils import ARUCO_DICT, cover_aruco
 import argparse
 import time
 import cv2
 import sys
 from TransFussion import TransFussion, main_color_detect
+import glob
+import os
 
 
 pipeline = "rtsp://10.32.90.53:18464/h264_ulaw.sdp"
@@ -55,18 +57,19 @@ while True:
 	# frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_CUBIC)
 	corners, ids, rejected =detector.detectMarkers(frame)
 	bg_color = tuple(val.item() for val in main_color_detect(frame).flatten())
-	detected_markers = aruco_display(corners, ids, rejected, frame, bg_color)
+	_  = cover_aruco(corners, ids, rejected, frame, bg_color)
+	pics = glob.glob(os.path.join("Gallery", "*.jpg"))
 	render = np.zeros(1)
 	if corners and len(corners) > 0:
-		flag = 0
+		i = 0
 		for corner in corners:
-			flag += 1
+			i += 1
 			corner = corner.reshape(4,2).astype(np.uint32).tolist()
 			# corners = corners[0].reshape(4,2).astype(np.uint32).tolist()
-			if flag == 1:
-				render = TransFussion(frame, 'test.jpg', corner, 1)
+			if i == 1:
+				render = TransFussion(frame, pics[i], corner, 1)
 			else:
-				render = TransFussion(render, 'test.jpg', corner, 1)
+				render = TransFussion(render, pics[i], corner, 1)
 	# corners = [int(corner) for corner in corners]
 	
 	if render.any():
