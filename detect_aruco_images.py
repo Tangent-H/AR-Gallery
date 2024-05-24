@@ -7,6 +7,7 @@ from utils import ARUCO_DICT, aruco_display
 import argparse
 import cv2
 import sys
+from TransFussion import TransFussion
 
 
 ap = argparse.ArgumentParser()
@@ -37,7 +38,9 @@ arucoParams = cv2.aruco.DetectorParameters()
 
 detector = cv2.aruco.ArucoDetector(arucoDict, arucoParams) 
 corners, ids, rejected =detector.detectMarkers(image)
-
+# corners = corners[0].reshape(4,2).tolist()
+print(f"corners: {corners[1].shape}")
+# render = TransFussion(image, 'test.jpg', corners, 0.5)
 detected_markers = aruco_display(corners, ids, rejected, image)
 cv2.imshow("Image", detected_markers)
 

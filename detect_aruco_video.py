@@ -1,7 +1,7 @@
 '''
 Sample Command:-
 python detect_aruco_video.py --type DICT_5X5_100 --camera True
-python detect_aruco_video.py --type DICT_5X5_100 --camera False --video test_video.mp4
+python detect_aruco_video.py --type DICT_5X5_100 --camera False --video Video/test.mp4
 python detect_aruco_video.py -i True -t DICT_5X5_100
 '''
 
@@ -11,6 +11,8 @@ import argparse
 import time
 import cv2
 import sys
+from TransFussion import TransFussion, main_color_detect
+
 
 pipeline = "rtsp://10.32.90.53:18464/h264_ulaw.sdp"
 ap = argparse.ArgumentParser()
@@ -40,7 +42,7 @@ arucoParams = cv2.aruco.DetectorParameters()
 detector = cv2.aruco.ArucoDetector(arucoDict, arucoParams) 
 
 while True:
-	ret, frame = video.read()
+	ret, frame = video.read(0)
 	
 	if ret is False:
 		break
@@ -52,13 +54,25 @@ while True:
 	# height = int(width*(h/w))
 	# frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_CUBIC)
 	corners, ids, rejected =detector.detectMarkers(frame)
-
-
-	detected_markers = aruco_display(corners, ids, rejected, frame)
+	bg_color = tuple(val.item() for val in main_color_detect(frame).flatten())
+	detected_markers = aruco_display(corners, ids, rejected, frame, bg_color)
+	render = np.zeros(1)
+	if corners and len(corners) > 0:
+		flag = 0
+		for corner in corners:
+			flag += 1
+			corner = corner.reshape(4,2).astype(np.uint32).tolist()
+			# corners = corners[0].reshape(4,2).astype(np.uint32).tolist()
+			if flag == 1:
+				render = TransFussion(frame, 'test.jpg', corner, 1)
+			else:
+				render = TransFussion(render, 'test.jpg', corner, 1)
+	# corners = [int(corner) for corner in corners]
 	
-
-	cv2.imshow("Image", detected_markers)
-
+	if render.any():
+		cv2.imshow("Image", render)
+	else:
+		cv2.imshow("Image", frame)
 	key = cv2.waitKey(1) & 0xFF
 	if key == ord("q"):
 	    break
