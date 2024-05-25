@@ -6,7 +6,7 @@ python detect_aruco_video.py -i True -t DICT_5X5_100
 '''
 
 import numpy as np
-from utils import ARUCO_DICT, cover_aruco
+from utils import *
 import argparse
 import time
 import cv2
@@ -56,8 +56,11 @@ while True:
 	# height = int(width*(h/w))
 	# frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_CUBIC)
 	corners, ids, rejected =detector.detectMarkers(frame)
+	if corners:
+		print(f"corners: {corners[0]}")
 	bg_color = tuple(val.item() for val in main_color_detect(frame).flatten())
-	_  = cover_aruco(corners, ids, rejected, frame, bg_color)
+	aspect_ratio = get_image_aspect_ratios("Gallery")
+	_ = cover_aruco(corners, ids, rejected, frame, bg_color,aspect_ratios=aspect_ratio)
 	pics = glob.glob(os.path.join("Gallery", "*.jpg"))
 	render = np.zeros(1)
 	if corners and len(corners) > 0:
@@ -65,7 +68,7 @@ while True:
 		for corner in corners:
 			i += 1
 			corner = corner.reshape(4,2).astype(np.uint32).tolist()
-			# corners = corners[0].reshape(4,2).astype(np.uint32).tolist()
+			print(f"processed corner: {corner}")
 			if i == 1:
 				render = TransFussion(frame, pics[i], corner, 1)
 			else:
