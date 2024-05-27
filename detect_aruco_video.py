@@ -56,19 +56,16 @@ while True:
 	# height = int(width*(h/w))
 	# frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_CUBIC)
 	corners, ids, rejected =detector.detectMarkers(frame)
-	if corners:
-		print(f"corners: {corners[0]}")
 	bg_color = tuple(val.item() for val in main_color_detect(frame).flatten())
 	aspect_ratio = get_image_aspect_ratios("Gallery")
-	_ = cover_aruco(corners, ids, rejected, frame, bg_color,aspect_ratios=aspect_ratio)
+	_,newcorners = cover_aruco(corners, ids, rejected, frame, bg_color,aspect_ratios=aspect_ratio)
 	pics = glob.glob(os.path.join("Gallery", "*.jpg"))
 	render = np.zeros(1)
-	if corners and len(corners) > 0:
+	if newcorners.any() and len(newcorners) > 0:
 		i = 0
-		for corner in corners:
+		for corner in newcorners:
 			i += 1
 			corner = corner.reshape(4,2).astype(np.uint32).tolist()
-			print(f"processed corner: {corner}")
 			if i == 1:
 				render = TransFussion(frame, pics[i], corner, 1.5)
 			else:

@@ -65,6 +65,7 @@ ARUCO_DICT = {
 
 
 def cover_aruco(corners, ids, rejected, image, bg_color, aspect_ratios):
+    new_corners = np.zeros(1)
     if len(corners) > 0:
         # flatten the ArUco IDs list
         ids = ids.flatten()
@@ -101,7 +102,7 @@ def cover_aruco(corners, ids, rejected, image, bg_color, aspect_ratios):
                 new_corners = markerCorners.astype(np.int32)
 
             # 绘制图像
-            bg_color = (0,255,0)
+            # bg_color = (0,255,0)
             cv2.line(image, tuple(new_corners[0]), tuple(new_corners[1]), bg_color, 5)
             cv2.line(image, tuple(new_corners[1]), tuple(new_corners[2]), bg_color, 5)
             cv2.line(image, tuple(new_corners[2]), tuple(new_corners[3]), bg_color, 5)
@@ -114,9 +115,9 @@ def cover_aruco(corners, ids, rejected, image, bg_color, aspect_ratios):
             # cv2.circle(image, (cX, cY), 4, (0, 0, 255), -1)
             # cv2.putText(image, str(markerID), (new_corners[0][0], new_corners[0][1] - 10),
             #             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2)
-            print("[Inference] ArUco marker ID: {}".format(markerID))
+            # print("[Inference] ArUco marker ID: {}".format(markerID))
 
-    return image
+    return image,new_corners
 
 def get_image_aspect_ratios(folder_path):
     # 获取指定文件夹下所有.jpg文件
