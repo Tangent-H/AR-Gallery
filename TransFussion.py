@@ -100,24 +100,52 @@ def crop_image_outside_bounds(image, center, shape_bg):
     print('[debug] cropped_image.shape:', cropped_image.shape, 'center:', center)
     return cropped_image, center
 
+def blend_images(src, dst, mask, center):
+    x, y = center
+    h, w = src.shape[:2]
+
+    # Calculate the top-left corner of the ROI
+    x_start = x - w // 2
+    y_start = y - h // 2
+
+    # Ensure ROI is within the bounds of the destination image
+    x_end = x_start + w
+    y_end = y_start + h
+
+    # Create a copy of the destination image to avoid modifying the original
+    blended = dst.copy()
+
+    # Define the region of interest (ROI) on the destination image
+    roi = blended[y_start:y_end, x_start:x_end]
+
+    # Use the mask to copy the source image into the ROI of the destination image
+    # The mask should be resized to match the source image if necessary
+    mask_resized = cv2.resize(mask, (w, h), interpolation=cv2.INTER_NEAREST)
+    cv2.copyTo(src, mask_resized, roi)
+
+    return blended
+
 def fussion(background : np.ndarray, obj : np.ndarray, center, k) -> np.ndarray:
     width_obj, height_obj, channels_ = obj.shape
 
     # cv2.namedWindow('obj', cv2.WINDOW_NORMAL)
     # cv2.imshow('1', obj)
-    
-    obj_rs = cv2.resize(obj, (int(height_obj*k), int(width_obj*k)), interpolation=cv2.INTER_LINEAR)
+    try:
+        obj_rs = cv2.resize(obj, (int(height_obj*k), int(width_obj*k)), interpolation=cv2.INTER_LINEAR)
+        obj_croped, center = crop_image_outside_bounds(obj_rs, center, background.shape) # 
+        # print('[debug]', obj_croped.shape, background.shape, center)
+        mask = 255 * np.ones(obj_croped.shape, obj_croped.dtype)       
+        # mixed_clone = cv2.seamlessClone(obj_croped, background, mask, center, cv2.NORMAL_CLONE)
+        mixed_clone = blend_images(obj_croped, background, mask, center)
+    except Exception as e:
+        print(e)
+        print(f"height: {height_obj}, width: {width_obj}")
+        mixed_clone = None
 
     # cv2.namedWindow('warped_image', cv2.WINDOW_NORMAL)
     # cv2.imshow('2', obj_rs)
     
     # print('[debug]', obj_rs.shape, background.shape, center)
-    obj_croped, center = crop_image_outside_bounds(obj_rs, center, background.shape) # 
-    # print('[debug]', obj_croped.shape, background.shape, center)
-    mask = 255 * np.ones(obj_croped.shape, obj_croped.dtype)
-    
-    
-    mixed_clone = cv2.seamlessClone(obj_croped, background, mask, center, cv2.MIXED_CLONE)
     
     return mixed_clone
 
