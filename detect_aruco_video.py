@@ -42,7 +42,8 @@ arucoDict = cv2.aruco.getPredefinedDictionary(ARUCO_DICT[args["type"]])
 arucoParams = cv2.aruco.DetectorParameters()
 
 detector = cv2.aruco.ArucoDetector(arucoDict, arucoParams) 
-
+pics, aspect_ratio = get_image_aspect_ratios("Gallery")
+aspect_ratio = np.array(aspect_ratio)
 while True:
 	ret, frame = video.read(0)
 	
@@ -57,21 +58,30 @@ while True:
 	# frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_CUBIC)
 	corners, ids, rejected =detector.detectMarkers(frame)
 	bg_color = tuple(val.item() for val in main_color_detect(frame).flatten())
-	pics, aspect_ratio = get_image_aspect_ratios("Gallery")
-	# print(f"pics: {pics}; aspect_ratio: {aspect_ratio}")
-	_,adjusted_corners = cover_aruco(corners, ids, rejected, frame, bg_color, aspect_ratio)
 	render = np.zeros(1)
-	if  adjusted_corners is not None and len(adjusted_corners) > 0:
-		i = 0
-		for corner in adjusted_corners:
-			i += 1
-			# print(f"i: {i}")
-			corner = corner.reshape(4,2).astype(np.uint32).tolist()
-			if i == 1:
-				render = TransFussion(frame, pics[i], corner, 1.5)
-			else:
-				render = TransFussion(render, pics[i], corner, 1.5)
-	# corners = [int(corner) for corner in corners]
+	if ids is not None and ids.any()  and np.all((ids >= 1) & (ids <= 5)):
+		ids_copy = [int(id) for id in (ids-1).flatten().tolist()]
+		print(f"ids: {ids_copy}")
+		pics_show = []
+		aspect_ratio_show = []
+		for id in ids_copy:
+			pics_show.append(pics[id])
+			aspect_ratio_show.append(aspect_ratio[id])
+		print(f"pics_show: {pics_show}")
+		# print(f"pics: {pics}; aspect_ratio: {aspect_ratio}")
+		_,adjusted_corners = cover_aruco(corners, ids, rejected, frame, bg_color, aspect_ratio_show)
+		if  adjusted_corners is not None and len(adjusted_corners) > 0:
+			i = 0
+			for id in ids:
+				id = int(np.clip(id, 1, 5))
+				corner = adjusted_corners[i]
+				corner = corner.reshape(4,2).astype(np.uint32).tolist()
+				if i == 0:
+					render = TransFussion(frame, pics_show[i], corner, 1.5)
+				else:
+					render = TransFussion(render, pics_show[i], corner, 1.5)
+				i += 1
+		# corners = [int(corner) for corner in corners]
 	
 	if render is not None and render.any():
 		cv2.imshow("Image", render)

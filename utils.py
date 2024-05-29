@@ -137,7 +137,7 @@ def get_image_aspect_ratios(folder_path):
     for image_file in image_files:
         with Image.open(image_file) as img:
             width, height = img.size
-            aspect_ratio = width / height
+            aspect_ratio =  height / width
             aspect_ratios.append(aspect_ratio)
 
     return image_files, aspect_ratios

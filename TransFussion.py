@@ -166,7 +166,10 @@ def TransFussion(bg, obj, spectiveTransform, k):
     color_bgr = main_color_detect(obj)
     mask = cv2.warpPerspective(np.ones(obj.shape[:2], dtype=np.uint8), Mask, dsize=(warped_image.shape[1], warped_image.shape[0]))
     bool_mask = mask > 0
-    warped_image[~bool_mask] = color_bgr
+    try:
+        warped_image[~bool_mask] = color_bgr
+    except Exception as e:
+        print(e)
 
     mixed_image = fussion(bg, warped_image, center_bg, k*_k)
     return mixed_image
