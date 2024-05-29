@@ -135,8 +135,8 @@ def fussion(background : np.ndarray, obj : np.ndarray, center, k) -> np.ndarray:
         obj_croped, center = crop_image_outside_bounds(obj_rs, center, background.shape) # 
         # print('[debug]', obj_croped.shape, background.shape, center)
         mask = 255 * np.ones(obj_croped.shape, obj_croped.dtype)       
-        # mixed_clone = cv2.seamlessClone(obj_croped, background, mask, center, cv2.NORMAL_CLONE)
-        mixed_clone = blend_images(obj_croped, background, mask, center)
+        mixed_clone = cv2.seamlessClone(obj_croped, background, mask, center, cv2.NORMAL_CLONE)
+        # mixed_clone = blend_images(obj_croped, background, mask, center)
     except Exception as e:
         print(e)
         print(f"height: {height_obj}, width: {width_obj}")
