@@ -14,6 +14,7 @@ import sys
 from TransFussion import TransFussion, main_color_detect
 import glob
 import os
+import detect_aruco
 
 
 pipeline = "rtsp://10.32.90.53:18464/h264_ulaw.sdp"
@@ -56,10 +57,11 @@ while True:
 	# width=250
 	# height = int(width*(h/w))
 	# frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_CUBIC)
-	corners, ids, rejected =detector.detectMarkers(frame)
+	# corners, ids, rejected =detector.detectMarkers(frame)
+	corners, ids, rejected = detect_aruco.detect_markers_wrapper(frame)
 	bg_color = tuple(val.item() for val in main_color_detect(frame).flatten())
 	render = np.zeros(1)
-	if ids is not None and ids.any()  and np.all((ids >= 1) & (ids <= 5)):
+	if ids is not None and ids.any() and np.all((ids >= 1) & (ids <= 5)):
 		ids_copy = [int(id) for id in (ids-1).flatten().tolist()]
 		print(f"ids: {ids_copy}")
 		pics_show = []
