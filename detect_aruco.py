@@ -115,7 +115,7 @@ def extract_marker_id(corner_points, image):
         # print(f"rot : {rot}")
         reagrranged_corners = np.roll(ordered_corners_np, rot, axis=0)
         # print(f"aruco_binary: {aruco_binary_rot}")
-        cv2.circle(image, reagrranged_corners[0],radius=5, color=(0, 255, 0), thickness=-1)
+        # cv2.circle(image, reagrranged_corners[0],radius=5, color=(0, 255, 0), thickness=-1)
     return marker_id, reagrranged_corners
 
 def find_matching_aruco(aruco_binary):
