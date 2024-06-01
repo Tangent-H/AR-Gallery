@@ -77,9 +77,9 @@ while True:
 				corner = adjusted_corners[i]
 				corner = corner.reshape(4,2).astype(np.uint32).tolist()
 				if i == 0:
-					render = TransFussion(frame, pics_show[i], corner, 1.5)
+					render = TransFussion(frame, pics_show[i], corner, 2.0)
 				else:
-					render = TransFussion(render, pics_show[i], corner, 1.5)
+					render = TransFussion(render, pics_show[i], corner, 2.0)
 				i += 1
 		# corners = [int(corner) for corner in corners]
 	
