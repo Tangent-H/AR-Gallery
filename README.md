@@ -51,20 +51,20 @@ Also, you can alternate these two methods in 141-142 line code in `TransFussion_
 
 ## Test of Image Fussion
 
-The Poission Fussion is implement in `poissionFussion_manual.py`, you can test it directly by running 
+The Poisson Fussion is implement in `poissonFussion_manual.py`, you can test it directly by running 
 
-	python poissionFussion_manual.py
+	python poissonFussion_manual.py
 
 It will try to fuse `./test/fussion_plane.jpg` with `./test/fussion_underwater.jpg`. You can also change mask to alternate the fussion part of background figure by changing mask:
 
 	mask = np.array([[400, 400], [300, 200]]) # [center, window_size] 
 
-You can also try fuse another two figures. Just fill the filepath on last code of `poissionFussion_manual.py`:
+You can also try fuse another two figures. Just fill the filepath on last code of `poissonFussion_manual.py`:
 
 	if __name__ == "__main__":
 		main('foreground_filtpath', 'background_filepath')
 
-Because the manual implementation of Poission Fussion is too slow, we recommend you to use `TransFussion_poisson.py` to do video figure fussion, which uses the library of **OpenCV**, instead of `poissionFussion_manual.py`. `poissionFussion_manual.py` is only used for two single figures' fussion. 
+Because the manual implementation of Poisson Fussion is too slow, we recommend you to use `TransFussion_poisson.py` to do video figure fussion, which uses the library of **OpenCV**, instead of `poissonFussion_manual.py`. `poissonFussion_manual.py` is only used for two single figures' fussion. 
 
 
 
