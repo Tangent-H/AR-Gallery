@@ -11,7 +11,7 @@ import argparse
 import time
 import cv2
 import sys
-from TransFussion import TransFussion, main_color_detect
+from TransFussion_poisson import TransFussion, main_color_detect
 import glob
 import os
 import detect_aruco
@@ -50,7 +50,6 @@ while True:
 	
 	if ret is False:
 		break
-
 
 	h, w, _ = frame.shape
 
