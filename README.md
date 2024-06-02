@@ -27,10 +27,20 @@ If you want to compare the ArUco detection result using the OpenCV ArUco library
 	corners, ids, rejected = detect_aruco.detect_markers_wrapper(frame) # ours
 ```
 
-If you want to benchmark the result of our method and OpenCV’s method, go to benchmark folder, run
+If you want to benchmark the result of our method and OpenCV’s method, go to `benchmark` folder, run
 
 ```
-python benmark.py
+python benchmark.py
 ```
 
-And you can find
+And you can find the difference of failure cases between our method and OpenCV’s method.
+
+Testing the average FPS needs to do a little bit modification to `benchmark.py`. The main change lies in line 66-69. You need to comment out one of the detection method and reserve the other one.
+
+```python
+	start_time_buf.append(time.time())
+	corners, ids, rejected =detector.detectMarkers(frame)	# Opencv method
+	corners1, ids1, rejected1 = detect_aruco.detect_markers_wrapper(frame_copy) # our method
+	stop_time_buf.append(time.time())
+```
+
