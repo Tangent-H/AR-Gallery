@@ -50,6 +50,36 @@ However, this method works well most of the time when we look essentially in a d
 
 Knowing that we cannot use this method to determine the corners in the correct order all at once, we divide the process into two steps. First, reorder the point set in a clockwise manner, ignoring the real order of the corner points for an ArUco marker. Then, try to decode the ArUco markers in this initial order. If no match is found, rotate it by 90 degrees and repeat this up to three times. By doing so, we can confidently determine the correct point order to decode or verify whether it is a valid ArUco marker.
 
+The overall logic behind can be described by the following algorithm, which takes in a image with a list of disorder corner points, and return a rearranged corner points with corresponding marker ids.
+
+```python
+Alorithm: Extract markers ids and orientation
+
+Input: Image contatining ArUco markers (image), with a list of N disordered corners points (Corners: Shape[N,4,2])
+
+Output: Markers ids, with corresponding ordered corners points [top-left (tl), top-right(tr), bottom-right(br), bottom-left(bl)]
+
+Clockwise_Corners <- Reorder_Points_clk_wise(Corners)
+marker_front_view <- Perspective_transform(Clockwise_corners)
+marker_front_view_crop <- ratio_crop_out_most_pixel(marker_front_view)
+marker_front_view_crop_bin <- binarize(marker_front_view_crop)
+bit_matrix <- resize(marker_front_view_crop_binarize, 5X5) # resize to 5 pixels * 5 pixels to decode for markers in DICT_5X5_100
+for i in range 0 to 3:
+    bit_matrix <- rotate_clk_wise_degrees(bit_matrix, i * 90)
+    if bit_matrix == certain_pattern_in_DICT:
+		id  <- retrieve_id(certain_pattern_in_DICt)
+        Rearranged_Corners <- roll(Clockwise_Corners, i) 
+        return id, Rearranged_Corners
+# If no matched id
+ return -1, None
+
+Function Reorder_Points_clk_wise(Corners):
+   Center_Point
+
+```
+
+
+
 
 
 ### References:
