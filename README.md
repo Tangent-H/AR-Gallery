@@ -44,3 +44,27 @@ Testing the average FPS needs to do a little bit modification to `benchmark.py`.
 	stop_time_buf.append(time.time())
 ```
 
+Also, you can alternate these two methods in 141-142 line code in `TransFussion_poisson.py` to check the different effect by direct fussion and possion fussion:
+
+	# nomal_clone = cv2.seamlessClone(obj_croped, background, mask, center, cv2.NORMAL_CLONE) # direct fussion
+	#nomal_clone = cv2.seamlessClone(obj_croped,  background, mask, center, cv2.MIXED_CLONE) # possion fussion
+
+## Test of Image Fussion
+
+The Poission Fussion is implement in `poissionFussion_manual.py`, you can test it directly by running 
+
+	python poissionFussion_manual.py
+
+It will try to fuse `./test/fussion_plane.jpg` with `./test/fussion_underwater.jpg`. You can also change mask to alternate the fussion part of background figure by changing mask:
+
+	mask = np.array([[400, 400], [300, 200]]) # [center, window_size] 
+
+You can also try fuse another two figures. Just fill the filepath on last code of `poissionFussion_manual.py`:
+
+	if __name__ == "__main__":
+		main('foreground_filtpath', 'background_filepath')
+
+Because the manual implementation of Poission Fussion is too slow, we recommend you to use `TransFussion_poisson.py` to do video figure fussion, which uses the library of **OpenCV**, instead of `poissionFussion_manual.py`. `poissionFussion_manual.py` is only used for two single figures' fussion. 
+
+
+
