@@ -49,24 +49,9 @@ def detect_corners(contours):
             corner_candidates.append(approx)
     return corner_candidates
 
-# def order_points(pts):
-#     rect = np.zeros((4, 2), dtype="float32")
-#     s = pts.sum(axis=1)
-#     rect[0] = pts[np.argmin(s)]
-#     rect[2] = pts[np.argmax(s)]
-#     diff = np.diff(pts, axis=1)
-#     rect[1] = pts[np.argmin(diff)]
-#     rect[3] = pts[np.argmax(diff)]
-#     return rect
-
 def order_points(pts):
-    # 计算质心
     center = np.mean(pts, axis=0)
-    
-    # 计算每个点与质心的角度
     angles = np.arctan2(pts[:, 1] - center[1], pts[:, 0] - center[0])
-    
-    # 按角度排序，顺时针
     sorted_indices = np.argsort(angles)
     sorted_pts = pts[sorted_indices]
     sorted_pts = sorted_pts.astype(np.float32)
@@ -75,6 +60,12 @@ def order_points(pts):
 
 def extract_marker_id(corner_points, image):
     ordered_corners = order_points(corner_points.reshape(4, 2))
+    # corner = ordered_corners.astype(np.int32)
+    # cv2.circle(image, tuple(corner[0]), 5, (255, 255, 255), -1)
+    # cv2.circle(image, tuple(corner[1]), 5, (0, 0, 255), -1)
+    # cv2.circle(image, tuple(corner[2]), 5, (0, 255, 0), -1)
+    # cv2.circle(image, tuple(corner[3]), 5, (255, 0, 0), -1)
+    # cv2.imshow("Order corners", image)
     ordered_corners_np = np.array(ordered_corners, dtype=np.int32)
     # print(f"corner_points: {corner_points}, ordered_corners: {ordered_corners}")
     (tl, tr, br, bl) = ordered_corners
@@ -103,9 +94,9 @@ def extract_marker_id(corner_points, image):
 
     warped_gray = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
     _, warped_binary = cv2.threshold(warped_gray, 127, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-    # print(f"maxlength:{maxLength}")
-    warped_binary = warped_binary[int(maxLength/8):int(maxLength/8*7),int(maxLength/8):int(maxLength/8*7)]
     # cv2.imshow("warped_binary", warped_binary)
+    # print(f"maxlength:{maxLength}")
+    warped_binary = warped_binary[int(maxLength/7):int(maxLength/7*6),int(maxLength/7):int(maxLength/7*6)]
     aruco_binary = cv2.resize(warped_binary, (5, 5)) # for DICT_5X5
     aruco_binary = (aruco_binary > 0).astype(int)
 
@@ -131,15 +122,23 @@ def verify_and_decode_markers(image):
     binary_image = preprocess_image(image)
     # cv2.imshow("Binary Image", binary_image)
     contours = detect_contours(binary_image)
-    # cv2.drawContours(image, contours, -1, (0,255,0), 3)
+    # visualize = cv2.cvtColor(binary_image,cv2.COLOR_GRAY2BGR)
+    # cv2.drawContours(visualize, contours, -1, (0,255,0), 2)
+    # cv2.imshow("Binary Image", visualize)
     # cv2.imshow("Contours", image)
     corners = detect_corners(contours)
+
     detected_markers = []
 
     for corner in corners:
-    # corner = corners[4]
+        # cv2.circle(image, tuple(corner[0][0]), 5, (255, 255, 255), -1)
+        # cv2.circle(image, tuple(corner[1][0]), 5, (0, 0, 255), -1)
+        # cv2.circle(image, tuple(corner[2][0]), 5, (0, 255, 0), -1)
+        # cv2.circle(image, tuple(corner[3][0]), 5, (255, 0, 0), -1)
+
         marker_id, rearranged_corners = extract_marker_id(corner, image)
         detected_markers.append((marker_id, rearranged_corners))
+        # cv2.imshow("Detected ArUco Markers", image)
     return detected_markers
 
 
@@ -172,5 +171,5 @@ def main(image_path):
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    image_path = "test/aruco_test5.jpg"
+    image_path = "test/aruco_test.jpg"
     main(image_path)
