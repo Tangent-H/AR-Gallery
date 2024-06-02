@@ -142,7 +142,7 @@ def fussion(background : np.ndarray, obj : np.ndarray, center, k) -> np.ndarray:
         obj_croped, center = crop_image_outside_bounds(obj_rs, center, background.shape) # 
         # print('[debug]', obj_croped.shape, background.shape, center)
         mask = 255 * np.ones(obj_croped.shape, obj_croped.dtype)       
-        # mixed_clone = cv2.seamlessClone(obj_croped, background, mask, center, cv2.NORMAL_CLONE)
+        # nomal_clone = cv2.seamlessClone(obj_croped, background, mask, center, cv2.NORMAL_CLONE)
         nomal_clone = cv2.seamlessClone(obj_croped, background, mask, center, cv2.MIXED_CLONE)
         # cv2.namedWindow('normal_clone', cv2.WINDOW_NORMAL)
         # cv2.imshow('normal_clone', nomal_clone)

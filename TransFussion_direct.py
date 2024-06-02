@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-def transpose3D(obj : np.ndarray, bg, spectiveTransform) -> np.ndarray:
+def transpose3D(obj : np.ndarray, bg, spectiveTransform, k) -> np.ndarray:
     x1, y1 = spectiveTransform[0]
     x2, y2 = spectiveTransform[1]
     x3, y3 = spectiveTransform[2]
@@ -37,8 +37,7 @@ def transpose3D(obj : np.ndarray, bg, spectiveTransform) -> np.ndarray:
                 empty_image[i, j, 3] = 0
             else:
                 empty_image[i, j, 3] = 255
-
-    print(M)
+    empty_image = cv2.resize(empty_image, (int(empty_image.shape[1]*k), int(empty_image.shape[0]*k)), interpolation=cv2.INTER_AREA)
     # cv2.imshow('Mask', empty_image)
     # cv2.waitKey(0)
     # cv2.destroyAllWindows()
@@ -127,7 +126,7 @@ def TransFussion(bg, obj, spectiveTransform, k):
     if isinstance(obj, str):
         obj = cv2.imread(obj)
 
-    warped_image, center_bg, Mask, _k = transpose3D(obj, bg, spectiveTransform) # 现在返回RGBA图
+    warped_image, center_bg, Mask, _k = transpose3D(obj, bg, spectiveTransform, 0.5) # 现在返回RGBA图
     print('center', center_bg)
     bg_A = np.zeros((bg.shape[0], bg.shape[1], 4), dtype=np.uint8) # (new) A
     bg_A[:, :, :3] = bg

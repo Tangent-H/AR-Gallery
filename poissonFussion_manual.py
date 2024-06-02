@@ -66,19 +66,6 @@ def poisson_equation(foreground, background, mask):
     x = np.clip(x, 0, 255)
     return x
 
-def solve_poisson(source, boundary):
-    height, width = boundary.shape
-    u = np.zeros_like(boundary)
-    for _ in range(100):  # 迭代次数，需要根据实际情况调整
-        for y in range(1, height - 1):
-            for x in range(1, width - 1):
-                u[y, x] = (u[y - 1, x] + u[y + 1, x] + u[y, x - 1] + u[y, x + 1] - source[y, x]) / 4
-        u[0, :] = boundary[0, :]
-        u[-1, :] = boundary[-1, :]
-        u[:, 0] = boundary[:, 0]
-        u[:, -1] = boundary[:, -1]
-    return u
-
 # 图像融合
 def blend_images(foreground_mixed, background, mask):
     mixed_pic = np.copy(background)
