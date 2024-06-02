@@ -104,7 +104,7 @@ def extract_marker_id(corner_points, image):
     warped_gray = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
     _, warped_binary = cv2.threshold(warped_gray, 127, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
     # print(f"maxlength:{maxLength}")
-    warped_binary = warped_binary[int(maxLength/8):int(maxLength/8*7),int(maxLength/8):int(maxLength/8*7)]
+    warped_binary = warped_binary[int(maxLength/7):int(maxLength/7*6),int(maxLength/7):int(maxLength/7*6)]
     # cv2.imshow("warped_binary", warped_binary)
     aruco_binary = cv2.resize(warped_binary, (5, 5)) # for DICT_5X5
     aruco_binary = (aruco_binary > 0).astype(int)

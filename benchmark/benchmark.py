@@ -40,7 +40,10 @@ detector = cv2.aruco.ArucoDetector(arucoDict, arucoParams)
 
 start_time_buf = []
 stop_time_buf = []
-
+error_cnt = 0
+frame_cnt = 0
+num_better = 0
+num_worse = 0
 while True:
 	ret, frame = video.read()
 	
@@ -50,27 +53,46 @@ while True:
 
 	h, w, _ = frame.shape
 
+	frame_cnt += 1
+
 	width=640
 	height = int(width*(h/w))
+
+	
+
 	frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_CUBIC)
+	frame_copy = frame.copy()
 
 	start_time_buf.append(time.time())
-	# corners, ids, rejected =detector.detectMarkers(frame)
-	corners, ids, rejected = detect_aruco.detect_markers_wrapper(frame)
+	corners, ids, rejected =detector.detectMarkers(frame)
+	corners1, ids1, rejected1 = detect_aruco.detect_markers_wrapper(frame_copy)
 	stop_time_buf.append(time.time())
 
 
 	detected_markers = aruco_display(corners, ids, rejected, frame)
+	detected_markers1 = aruco_display(corners1,ids1, rejected1, frame_copy)
 	
-
-	cv2.imshow("Image", detected_markers)
+	if len(corners) != len(corners1):
+		print(f"Detected markers count mismatch: {len(corners)} != {len(corners1)}")
+		error_cnt += 1
+		if len(corners) < len(corners1):
+			num_better += 1
+		elif len(corners) > len(corners1):
+			num_worse += 1
+		cv2.imwrite(f"results/cv_{frame_cnt}.jpg",detected_markers)
+		cv2.imwrite(f"results/ours_{frame_cnt}.jpg",detected_markers1)
+		# cv2.imshow("Image", detected_markers)
+		# cv2.imshow("Image1", detected_markers1)
 
 	key = cv2.waitKey(1) & 0xFF
 	if key == ord("q"):
 	    break
 
-
+print(f"Error count: {error_cnt}")
 print(f"Average FPS: {1/np.mean(np.array(stop_time_buf) - np.array(start_time_buf))}")
-
+print(f"Width: {width}, Height: {height}")
+print(f"Number of frames: {frame_cnt}")
+print(f"Number of better: {num_better}")
+print(f"Number of worse: {num_worse}")
 cv2.destroyAllWindows()
 video.release()
