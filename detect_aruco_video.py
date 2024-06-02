@@ -53,11 +53,11 @@ while True:
 
 	h, w, _ = frame.shape
 
-	# width=250
-	# height = int(width*(h/w))
-	# frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_CUBIC)
-	corners, ids, rejected =detector.detectMarkers(frame)
-	# corners, ids, rejected = detect_aruco.detect_markers_wrapper(frame)
+	width=640
+	height = int(width*(h/w))
+	frame = cv2.resize(frame, (width, height), interpolation=cv2.INTER_CUBIC)
+	# corners, ids, rejected =detector.detectMarkers(frame)
+	corners, ids, rejected = detect_aruco.detect_markers_wrapper(frame)
 	bg_color = tuple(val.item() for val in main_color_detect(frame).flatten())
 	render = np.zeros(1)
 	if ids is not None and ids.any() and np.all((ids >= 1) & (ids <= 5)):
@@ -69,7 +69,7 @@ while True:
 			pics_show.append(pics[id])
 			aspect_ratio_show.append(aspect_ratio[id])
 		print(f"pics_show: {pics_show}")
-		# print(f"pics: {pics}; aspect_ratio: {aspect_ratio}")
+		print(f"pics: {pics}; aspect_ratio: {aspect_ratio}")
 		_,adjusted_corners = cover_aruco(corners, ids, rejected, frame, bg_color, aspect_ratio_show)
 		if  adjusted_corners is not None and len(adjusted_corners) > 0:
 			i = 0
@@ -78,9 +78,9 @@ while True:
 				corner = adjusted_corners[i]
 				corner = corner.reshape(4,2).astype(np.uint32).tolist()
 				if i == 0:
-					render = TransFussion(frame, pics_show[i], corner, 2.0)
+					render = TransFussion(frame, pics_show[i], corner, 1.5)
 				else:
-					render = TransFussion(render, pics_show[i], corner, 2.0)
+					render = TransFussion(render, pics_show[i], corner, 1.5)
 				i += 1
 		# corners = [int(corner) for corner in corners]
 	
