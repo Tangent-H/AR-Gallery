@@ -12,9 +12,9 @@ import detect_aruco
 
 pipeline = "rtsp://10.32.90.53:18464/h264_ulaw.sdp"
 ap = argparse.ArgumentParser()
-ap.add_argument("-i", "--camera", required=True, help="Set to True if using webcam")
-ap.add_argument("-v", "--video", help="Path to the video file")
-ap.add_argument("-t", "--type", type=str, default="DICT_ARUCO_ORIGINAL", help="Type of ArUCo tag to detect")
+ap.add_argument("-i", "--camera", type=str,default="False",required=False, help="Set to True if using webcam")
+ap.add_argument("-v", "--video", type=str, default= "test.mp4", help="Path to the video file")
+ap.add_argument("-t", "--type", type=str, default="DICT_5X5_100", help="Type of ArUCo tag to detect")
 args = vars(ap.parse_args())
 
 
