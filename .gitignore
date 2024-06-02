@@ -1,3 +1,4 @@
 Video/
 __pycache__/
 *.mp4
+**/results/
