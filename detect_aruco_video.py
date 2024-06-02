@@ -11,7 +11,7 @@ import argparse
 import time
 import cv2
 import sys
-from TransFussion_direct import TransFussion, main_color_detect
+from TransFussion_poisson import TransFussion, main_color_detect
 import glob
 import os
 import detect_aruco
