@@ -74,13 +74,175 @@ for i in range 0 to 3:
  return -1, None
 
 Function Reorder_Points_clk_wise(Corners):
-   Center_Point
+   Center_Point <- (Corners[0]+Corners[1]+Corners[2]+Corners[3])/4
+	# Calculate the angle between the line connecting the corner point and the center point and the horizontal line
+    Corner_angles <- arctan(Corners-Center_Point)
+    sorted_indices <- sort(Corner_angles)
+    sorted_corners <- Corners[sorted_indices]
+    return sorted_corners
+end Function
 
+```
+
+```
+Algorithm: Extract markers IDs and orientation
+
+Input: 
+    - Image containing ArUco markers (image)
+    - List of N disordered corner points (Corners: Shape[N, 4, 2])
+
+Output: 
+    - Markers IDs, with corresponding ordered corners points [top-left (tl), top-right (tr), bottom-right (br), bottom-left (bl)]
+
+Main Function:
+1. Clockwise_Corners <- Reorder_Points_Clockwise(Corners)
+2. Marker_Front_View <- Perspective_Transform(Clockwise_Corners)
+3. Marker_Front_View_Crop <- Ratio_Crop_Out_Most_Pixel(Marker_Front_View)
+4. Marker_Front_View_Crop_Bin <- Binarize(Marker_Front_View_Crop)
+5. Bit_Matrix <- Resize(Marker_Front_View_Crop_Bin, 5x5)  # Resize to 5x5 pixels to decode markers in DICT_5X5_100
+6. For i in range 0 to 3:
+       a. Bit_Matrix <- Rotate_Clockwise_Degrees(Bit_Matrix, i * 90)
+       b. If Bit_Matrix matches a certain pattern in DICT:
+            i. ID <- Retrieve_ID(certain_pattern_in_DICT)
+           ii. Rearranged_Corners <- Roll(Clockwise_Corners, i)
+          iii. Return ID, Rearranged_Corners
+7. Return -1, None  # If no matched ID
+
+Function Reorder_Points_Clockwise(Corners):
+    - Center_Point <- (Corners[0] + Corners[1] + Corners[2] + Corners[3]) / 4
+    - Corner_Angles <- arctan2(Corners - Center_Point)  # Calculate angles between corner points and center point
+    - Sorted_Indices <- argsort(Corner_Angles)
+    - Sorted_Corners <- Corners[Sorted_Indices]
+    - Return Sorted_Corners
+End Function
+
+```
+
+```latex
+\begin{algorithm}[H]
+\caption{Extract Markers IDs and Orientation}
+\begin{algorithmic}[0]
+    \Require Image containing ArUco markers (\textit{image}), List of $N$ disordered corner points (\textit{Corners}: Shape[$N$, 4, 2])
+    \Ensure Markers IDs, ordered corners points
+    
+    \State \text{\# Reorder points in clock wise order}
+    \State $Corners \gets \text{make\_clk\_wise}(Corners)$
+    \State \text{\# Do Perspective Transform}
+    \State $Marker \gets \text{Persp\_trans}(Corners)$
+    \State $Crop \gets \text{Ratio\_crop}(Marker)$
+    \State $Bin \gets \text{Binarize}(Crop)$
+    \State \text{\# Resize to 5x5 pixels to decode markers in DICT\_5X5\_100}
+    \State $Bit \gets \text{Resize}(Bin, 5 \times 5)$ 
+    \For{$i \gets 0 \text{ to } 3$}
+        \State \text{\# Rotate decoded bit sequence clock wise}
+        \State $Bit \gets \text{rot}(Bit, -i \times 90)$
+        \If{$Bit\_Matrix = certain_pattern_in_DICT$}
+            \State $ID \gets \text{Retrieve\_ID}(certain\_pattern\_in\_DICT)$
+            \State \text{\# Roll down the corners according to i}
+            \State $Corners \gets \text{Roll}(Corners, i)$
+            \State \Return $ID, Rearranged\_Corners$
+        \EndIf
+    \EndFor
+    \State \Return $-1, \text{None} \text{   \# If no matched ID}$
+
+    \Function{make\_clk\_wise}{Corners}
+        \State $center \gets \text{get\_center}(Corners)$
+        \State $angles \gets \text{arctan}(Corners - center)$
+        \State $Indices \gets \text{sort}(angles)$
+        \State $Corners \gets \text{Corners}[Indices]$
+        \State \Return $Corners$
+    \EndFunction
+\end{algorithmic}
+\end{algorithm}
+```
+
+The corresponding python code is
+
+```python
+# make_clk_wise
+def order_points(pts):
+    center = np.mean(pts, axis=0)
+    angles = np.arctan2(pts[:, 1] - center[1], pts[:, 0] - center[0])
+    sorted_indices = np.argsort(angles)
+    sorted_pts = pts[sorted_indices]
+    sorted_pts = sorted_pts.astype(np.float32)
+    return sorted_pts
+
+# Extract Markers IDs and Orientation
+def extract_marker_id(corner_points, image):
+    ordered_corners = order_points(corner_points.reshape(4, 2))
+    ordered_corners_np = np.array(ordered_corners, dtype=np.int32)
+    (tl, tr, br, bl) = ordered_corners
+
+    widthA = np.sqrt(((br[0] - bl[0]) ** 2) + ((br[1] - bl[1]) ** 2))
+    widthB = np.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2))
+    maxWidth = max(int(widthA), int(widthB))
+
+    heightA = np.sqrt(((tr[0] - br[0]) ** 2) + ((tr[1] - br[1]) ** 2))
+    heightB = np.sqrt(((tl[0] - bl[0]) ** 2) + ((tl[1] - bl[1]) ** 2))
+    maxHeight = max(int(heightA), int(heightB))
+    
+    maxLength = max(maxWidth, maxHeight)
+
+    dst = np.array([
+        [0, 0],
+        [maxLength - 1, 0],
+        [maxLength - 1, maxLength - 1],
+        [0,  maxLength- 1]], dtype="float32")
+
+    M = cv2.getPerspectiveTransform(ordered_corners, dst)
+    warped = cv2.warpPerspective(image, M, (maxLength,maxLength))
+    warped_gray = cv2.cvtColor(warped, cv2.COLOR_BGR2GRAY)
+    _, warped_binary = cv2.threshold(warped_gray, 127, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+    warped_binary = warped_binary[int(maxLength/7):int(maxLength/7*6),int(maxLength/7):int(maxLength/7*6)]
+    aruco_binary = cv2.resize(warped_binary, (5, 5)) # for DICT_5X5
+    aruco_binary = (aruco_binary > 0).astype(int)
+    marker_id, aruco_binary_rot, rot = find_matching_aruco(aruco_binary)
+    reagrranged_corners = ordered_corners_np
+    if not marker_id == -1:
+        reagrranged_corners = np.roll(ordered_corners_np, rot, axis=0)
+    return marker_id, reagrranged_corners
+
+def find_matching_aruco(aruco_binary):
+    for rotation in range(4):
+        for key, value in ARUCO_DICT.items():
+            if np.array_equal(aruco_binary, value):
+                return key, aruco_binary, rotation
+        aruco_binary = np.rot90(aruco_binary, -1)
+    return -1, aruco_binary, None
 ```
 
 
 
+# Results
 
+Because ArUco detection is not end-to-end and proceeds step-by-step, the number of operations in later stages is limited by the number of candidate polygons in the image. This number varies greatly from image to image, making it difficult to estimate the time and space complexity directly. In other words, if there are many polygonal objects (including ArUco markers) in the image, it will take more time to determine if each object is a legitimate ArUco marker. If we define the number of candidate polygons as N, and assume each candidate polygon is a quadrilateral, we can infer that computation and storage grow linearly with the number of polygons. Thus, the time and space complexity can be expressed as O(N). However, the complexities of detecting contours and fitting polygons using OpenCV library functions are unknown to us, though they are positively correlated with the number of pixels.
+
+Despite this, we can estimate the performance of our own implementation of the ArUco detection algorithm. Our baseline method is the ArUco library in OpenCV, which is optimized at the algorithmic level, the C++ interface, and even directly from the CPU hardware level. Initially, we did not expect to surpass the performance of the OpenCV ArUco library. However, after conducting experiments, we found that our method outperformed the OpenCV ArUco library in some cases.
+
+The experiment setup was as follows:
+1. First experiment: Input the same video stream (387 frames in total) to both the baseline method and our method (the ArUco markers in the video have been panned, side-viewed, etc.), decode the ArUco markers, and compare the average FPS at different resolutions.
+2. Second experiment: Fix the resolution (640x360) of the video stream, and check whether the number of ArUco markers detected by our method and the OpenCV detection method is the same on each frame. These experiments were conducted on my personal laptop with an Intel Core i7-12700H CPU. The GPU was not used to accelerate detection.
+
+| Resolution | OpenCV’s FPS (frames per second) | Ours FPS (frames per second) |
+| ---------- | -------------------------------- | ---------------------------- |
+| 640x360    | 739.76                           | 722.79                       |
+| 1080x607   | 398.37                           | 378.25                       |
+| 1920x1080  | 140.36                           | 140.35                       |
+| 2560x1440  | 87.62                            | 101.80                       |
+| 4096x2304  | 38.80                            | 55.76                        |
+
+According to Table todo, our method and the OpenCV library function have comparable frame rates for smaller images (with only a 2% difference). As the image size increases, the frame rate of our method decreases less significantly than that of the OpenCV library function. For images larger than 1920x1440, our method can even achieves a performance improvement of 43.7% over the OpenCV library function, as seen with 4096x2304 resolution.
+
+In the second experiment, regarding detection accuracy, our method consistently outperformed OpenCV's in most cases. Out of 387 video frames, our method produced different results in 52 frames compared to OpenCV. In 42 of these 52 frames, our method detected more ArUco markers than OpenCV's method (all detected ArUco markers were correct). In only 10 consecutive frames did our method fail to detect more ArUco markers than OpenCV. Typical results are shown in Figure todo.
+
+![combined_result](./assets/combined_result.png)
+
+From the first two lines of Figure todo, our method performs better at detecting the edges of ArUco markers that are partially out of the field of view. From the third to fifth rows, it is evident that our method handles dynamic blurring better than OpenCV's method. However, in the last case, where the ArUco marker is partially occluded by an irregular object (e.g., a finger), OpenCV's method is more robust.
+
+Regarding frame rate, since we don't know the details of OpenCV's internal implementation, we can't determine why our approach achieves higher frame rates than the OpenCV ArUco library when the image size increases. However, it's reasonable to assume that our simple and efficient detection and decoding approach allows us to achieve very high frame rates, even without C++ acceleration or hardware acceleration, unlike OpenCV.
+
+Regarding recognition accuracy, our final code crops only 1/8 of the edges of the perspective-transformed ArUco markers instead of 1/7 as initially planned. This adjustment improves the recognition of ArUco markers farther from the lens center, as the edges are more affected by the camera's aberration. After perspective transformation, the black edges of the ArUco markers often become narrower, and reduced cropping ensures that useful information pixels are not lost. Additionally, performing Otsu binarization before decoding the ArUco markers helps handle residual shadows from motion blur, as Otsu binarization selects the threshold that minimizes variance. In cases where the ArUco marker edges are occluded by irregular objects, our method may fail because irregular object edges create new polygon corner points. When we detect a polygon with more or fewer than four corner points, we discard it as a candidate, leading to a failure in these cases.
 
 ### References:
 
