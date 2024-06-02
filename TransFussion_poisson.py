@@ -150,7 +150,7 @@ def fussion(background : np.ndarray, obj : np.ndarray, center, k) -> np.ndarray:
     except Exception as e:
         print(e)
         print(f"height: {height_obj}, width: {width_obj}")
-        mixed_clone = None
+        nomal_clone = None
 
     # cv2.namedWindow('warped_image', cv2.WINDOW_NORMAL)
     # cv2.imshow('2', obj_rs)
