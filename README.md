@@ -64,7 +64,13 @@ You can also try fuse another two figures. Just fill the filepath on last code o
 	if __name__ == "__main__":
 		main('foreground_filtpath', 'background_filepath')
 
-Because the manual implementation of Poisson Fussion is too slow, we recommend you to use `TransFussion_poisson.py` to do video figure fussion, which uses the library of **OpenCV**, instead of `poissonFussion_manual.py`. `poissonFussion_manual.py` is only used for two single figures' fussion. 
+Because the manual implementation of Poisson Fussion is too slow, we recommend you to use `TransFussion_poisson.py` to do video figure fussion, which uses the library of **OpenCV**, instead of `poissonFussion_manual.py`. `poissonFussion_manual.py` is only used for two single figures' fusion. 
+
+## Reference
+
+https://github.com/GSNCodes/ArUCo-Markers-Pose-Estimation-Generation-Python
+
+
 
 
 
